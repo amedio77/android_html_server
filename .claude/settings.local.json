@@ -30,7 +30,9 @@
       "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell \"logcat -d | grep -i ''ServerViewModel\\|RemoteEditor''\")",
       "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" logcat -d -s System.out)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(move README.md appREADME.md)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": [],
