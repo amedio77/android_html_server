@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rmdir:*)",
+      "Bash(rm:*)",
+      "Bash(./gradlew --stop)",
+      "Bash(./gradlew:*)",
+      "Bash(taskkill:*)",
+      "Bash(adb:*)",
+      "Bash(where.exe:*)",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" devices)",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell pm list packages -3)",
+      "Bash(dir:*)",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" install \"C:\\Users\\PC\\AndroidStudioProjects\\MyApplication\\app\\build\\outputs\\apk\\debug\\app-debug.apk\")",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell pm list packages com.lf.remoteeditor)",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell monkey -p com.lf.remoteeditor -c android.intent.category.LAUNCHER 1)",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" uninstall com.lf.remoteeditor)",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell \"ls -la /storage/\")",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell \"ls -la /sdcard/\")",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell \"ls -la /sdcard/work/\")",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell input tap 500 1000)",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell ip route)",
+      "Bash(curl:*)",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell \"mkdir -p /sdcard/Android/data/com.lf.remoteeditor/files/work\")",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell \"ls -la /sdcard/Android/data/com.lf.remoteeditor/files/work/\")",
+      "Bash(.gradlew clean build)",
+      "Bash(gradlew.bat clean:*)",
+      "Bash(\"C:\\Users\\PC\\AndroidStudioProjects\\MyApplication\\gradlew.bat\" clean build)",
+      "Bash(\"C:\\Users\\PC\\AndroidStudioProjects\\MyApplication\\gradlew.bat\" assembleDebug -x lint)",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell \"logcat -d | grep -i ''ServerViewModel\\|RemoteEditor''\")",
+      "Bash(\"C:\\Users\\PC\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" logcat -d -s System.out)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "defaultMode": "acceptEdits"
+  }
+}
