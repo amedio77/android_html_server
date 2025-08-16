@@ -32,7 +32,8 @@
       "Bash(git init:*)",
       "Bash(git add:*)",
       "Bash(move README.md appREADME.md)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": [],
