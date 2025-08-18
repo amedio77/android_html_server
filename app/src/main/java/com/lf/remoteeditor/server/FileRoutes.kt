@@ -139,7 +139,7 @@ fun Route.fileRoutes(rootDirectory: File) {
                     return@post
                 }
                 
-                val result = withContext(Dispatchers.IO) {
+                withContext(Dispatchers.IO) {
                     try {
                         if (request.isDirectory) {
                             val created = file.mkdirs()
@@ -167,7 +167,6 @@ fun Route.fileRoutes(rootDirectory: File) {
                                 file.writeText(request.content)
                             }
                         }
-                        true
                     } catch (e: Exception) {
                         throw Exception("IO Error: ${e.message}")
                     }
