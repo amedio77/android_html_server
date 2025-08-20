@@ -329,6 +329,107 @@ fun Route.fileRoutes(rootDirectory: File) {
                     ApiResponse(false, "Upload failed: ${e.message}"))
             }
         }
+        
+        // Upload folder with structure preservation
+        post("/upload/folder") {
+            try {
+                val multipart = call.receiveMultipart()
+                val uploadedFiles = mutableListOf<String>()
+                val failedFiles = mutableListOf<String>()
+                val pathsList = mutableListOf<String>()
+                val filesList = mutableListOf<Pair<File, PartData.FileItem>>()
+                
+                // First pass: collect all files and paths
+                multipart.forEachPart { part ->
+                    when (part) {
+                        is PartData.FormItem -> {
+                            if (part.name == "paths") {
+                                pathsList.add(part.value)
+                            }
+                        }
+                        is PartData.FileItem -> {
+                            if (part.name == "files") {
+                                val tempFile = File.createTempFile("upload", ".tmp")
+                                part.streamProvider().use { input ->
+                                    tempFile.outputStream().use { output ->
+                                        input.copyTo(output)
+                                    }
+                                }
+                                filesList.add(tempFile to part)
+                            }
+                        }
+                        else -> {
+                            // Ignore other part types
+                        }
+                    }
+                    part.dispose()
+                }
+                
+                // Second pass: process files with their paths
+                withContext(Dispatchers.IO) {
+                    filesList.forEachIndexed { index, (tempFile, partData) ->
+                        val relativePath = pathsList.getOrNull(index) ?: partData.originalFileName
+                        if (relativePath != null && relativePath.isNotEmpty()) {
+                            try {
+                                // Security check: prevent path traversal
+                                val sanitizedPath = relativePath.replace("..", "")
+                                val targetFile = File(rootDirectory, sanitizedPath)
+                                
+                                // Create parent directories if they don't exist
+                                targetFile.parentFile?.mkdirs()
+                                
+                                // Handle file conflicts
+                                val finalFile = if (targetFile.exists()) {
+                                    val nameWithoutExt = targetFile.nameWithoutExtension
+                                    val ext = if (targetFile.extension.isNotEmpty()) ".${targetFile.extension}" else ""
+                                    var counter = 1
+                                    var newFile: File
+                                    do {
+                                        newFile = File(targetFile.parent, "${nameWithoutExt}_$counter$ext")
+                                        counter++
+                                    } while (newFile.exists())
+                                    newFile
+                                } else {
+                                    targetFile
+                                }
+                                
+                                // Copy temp file to final location
+                                tempFile.copyTo(finalFile, overwrite = true)
+                                tempFile.delete()
+                                
+                                uploadedFiles.add(sanitizedPath)
+                            } catch (e: Exception) {
+                                failedFiles.add(relativePath)
+                                println("Failed to upload $relativePath: ${e.message}")
+                                tempFile.delete()
+                            }
+                        } else {
+                            tempFile.delete()
+                        }
+                    }
+                }
+                
+                val message = buildString {
+                    if (uploadedFiles.isNotEmpty()) {
+                        append("Uploaded ${uploadedFiles.size} files")
+                    }
+                    if (failedFiles.isNotEmpty()) {
+                        if (uploadedFiles.isNotEmpty()) append(". ")
+                        append("Failed: ${failedFiles.size} files")
+                    }
+                }
+                
+                if (failedFiles.isEmpty()) {
+                    call.respond(ApiResponse(true, message.ifEmpty { "No files uploaded" }))
+                } else {
+                    call.respond(HttpStatusCode.PartialContent, ApiResponse(false, message))
+                }
+                
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, 
+                    ApiResponse(false, "Folder upload failed: ${e.message}"))
+            }
+        }
     }
 }
 

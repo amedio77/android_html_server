@@ -164,7 +164,9 @@ class WebServer(
                 <h3>파일 탐색기</h3>
                 <button id="new-file-btn" class="btn btn-primary">새 파일</button>
                 <button id="upload-btn" class="btn btn-secondary">파일 업로드</button>
+                <button id="upload-folder-btn" class="btn btn-secondary">폴더 업로드</button>
                 <input type="file" id="file-input" multiple style="display: none;" accept="*/*">
+                <input type="file" id="folder-input" webkitdirectory directory multiple style="display: none;">
             </div>
             <div id="file-list" class="file-list"></div>
         </div>
@@ -210,7 +212,7 @@ body {
 }
 
 .sidebar {
-    width: 250px;
+    width: 280px;
     background: #252526;
     border-right: 1px solid #3e3e42;
     display: flex;
@@ -294,6 +296,7 @@ body {
     background: #0e639c;
     color: white;
     margin-bottom: 8px;
+    width: 100%;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -304,6 +307,10 @@ body {
     background: #5c5c5c;
     color: white;
     margin-bottom: 8px;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -398,6 +405,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load file list
     loadFileList();
     
+    // Check webkitdirectory support
+    checkFolderUploadSupport();
+    
     // Event listeners
     document.getElementById('save-btn').addEventListener('click', saveFile);
     document.getElementById('delete-btn').addEventListener('click', deleteFile);
@@ -405,7 +415,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('upload-btn').addEventListener('click', function() {
         document.getElementById('file-input').click();
     });
+    document.getElementById('upload-folder-btn').addEventListener('click', function() {
+        document.getElementById('folder-input').click();
+    });
     document.getElementById('file-input').addEventListener('change', uploadFiles);
+    document.getElementById('folder-input').addEventListener('change', uploadFolder);
     
     // Auto-save functionality
     let saveTimeout;
@@ -416,6 +430,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+function checkFolderUploadSupport() {
+    const folderInput = document.getElementById('folder-input');
+    const folderBtn = document.getElementById('upload-folder-btn');
+    
+    // Check if webkitdirectory is supported
+    if ('webkitdirectory' in folderInput) {
+        console.log('Folder upload is supported');
+        folderBtn.style.display = 'block';
+    } else {
+        console.log('Folder upload is not supported on this browser');
+        folderBtn.style.display = 'none';
+        // You could show a message to the user here
+    }
+    
+    // Force visibility for testing (remove this in production)
+    folderBtn.style.display = 'block';
+    folderBtn.style.opacity = 'webkitdirectory' in folderInput ? '1' : '0.5';
+    
+    if (!('webkitdirectory' in folderInput)) {
+        folderBtn.title = '이 브라우저에서는 폴더 업로드를 지원하지 않습니다';
+    }
+}
 
 async function loadFileList() {
     try {
@@ -577,6 +614,55 @@ async function uploadFiles(event) {
         alert('업로드 오류: ' + error.message);
     } finally {
         // Clear the file input so the same file can be selected again
+        event.target.value = '';
+    }
+}
+
+async function uploadFolder(event) {
+    const files = event.target.files;
+    if (!files || files.length === 0) {
+        alert('폴더가 선택되지 않았습니다.');
+        return;
+    }
+    
+    // Check if webkitdirectory is supported
+    const folderInput = document.getElementById('folder-input');
+    if (!('webkitdirectory' in folderInput)) {
+        alert('이 브라우저에서는 폴더 업로드를 지원하지 않습니다. 개별 파일을 업로드해주세요.');
+        return;
+    }
+    
+    console.log('폴더 업로드 시작: ' + files.length + '개 파일');
+    
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        // webkitRelativePath contains the folder structure
+        const relativePath = file.webkitRelativePath || file.name;
+        console.log('파일 ' + (i+1) + ': ' + relativePath);
+        formData.append('files', file);
+        formData.append('paths', relativePath);
+    }
+    
+    try {
+        const response = await fetch('/api/upload/folder', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert('폴더 업로드 완료: ' + result.message);
+            loadFileList(); // Refresh file list
+        } else {
+            alert('폴더 업로드 실패: ' + result.message);
+        }
+    } catch (error) {
+        alert('폴더 업로드 오류: ' + error.message);
+        console.error('Upload error:', error);
+    } finally {
+        // Clear the file input so the same folder can be selected again
         event.target.value = '';
     }
 }
